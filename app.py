@@ -1,3 +1,8 @@
+# Python SQL toolkit and Object Relational Mapper
+import sqlalchemy
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
 # Dependencies
 import pandas as pd
 import os
@@ -10,46 +15,81 @@ from flask import (
 
 from flask_sqlalchemy import SQLAlchemy
 
-# Store filepath in a variable
-file_one = os.path.join("db", "Belly_Button_Biodiversity_Metadata.csv")
-file_two = os.path.join("db", "belly_button_biodiversity_otu_id.csv")
-file_three = os.path.join("db", "belly_button_biodiversity_samples.csv")
-file_four = os.path.join("db", "metadata_columns.csv")
+# Create engine using the `demographics.sqlite` database file
+engine = create_engine("sqlite:///belly_button_biodiversity.sqlite")
 
-# Read our Data file with the pandas library
-# Not every CSV requires an encoding, but be aware this can come up
-metadata_df = pd.read_csv(file_one, encoding="ISO-8859-1")
-otu_id_df = pd.read_csv(file_two, encoding="ISO-8859-1")
-samples_df = pd.read_csv(file_three, encoding="ISO-8859-1")
-columns_df = pd.read_csv(file_four, encoding="ISO-8859-1")
+# Declare a Base using `automap_base()`
+Base = automap_base()
 
-samples_names_list = list(samples_df.columns.values)
-samples_names_list.pop(0)
+# Use the Base class to reflect the database tables
+Base.prepare(engine, reflect=True)
 
-# metadata_df = metadata_df.set_index("SAMPLEID")
+# Print all of the classes mapped to the Base
+print(Base.classes.keys())
 
-# giving_value = metadata_df.loc["BA_940"]
+# Assign the dow class to a variable called `Dow`
+samples = Base.classes.samples
+otu = Base.classes.otu
+samples_metadata = Base.classes.samples_metadata
+
+# Create a session
+session = Session(engine)
+
+sample_names = samples.__table__.columns.keys()
+sample_names.pop(0)
+
+# Display the row's columns and data in dictionary format
+# first_row = session.query(samples).first()
+# print(first_row.__dict__)
+
+list_of_sample_names =[]
+# # Use the session to query Dow table and display the first 5 trade volumes
+for row in session.query(samples).all():
+    list_of_sample_names.append(row)
 
 
-df_filtered = metadata_df[(metadata_df["SAMPLEID"] == int(940)) & metadata_df["SAMPLEID"] == int(941)]
+list_of_otu_description =[]
+# # Use the session to query Dow table and display the first 5 trade volumes
+for row in session.query(otu.lowest_taxonomic_unit_found).all():
+    list_of_otu_description.append(row[0])
 
-print(df_filtered["AGE"])
 
-filtered_result = {
-        "AGE": df_filtered["AGE"],
-        "BBTYPE": df_filtered["BBTYPE"],
-        "ETHNICITY": df_filtered["ETHNICITY"],
-        "GENDER": df_filtered["GENDER"],
-        "LOCATION": df_filtered["LOCATION"],
-        "SAMPLEID": df_filtered["SAMPLEID"]
+filtered_sample = []
+for row in session.query(samples_metadata.AGE, samples_metadata.ETHNICITY,samples_metadata.GENDER, samples_metadata.BBTYPE, samples_metadata.LOCATION, samples_metadata.SAMPLEID).filter(samples_metadata.SAMPLEID == 940).all():
+    filtered_dictionary = {
+        "AGE": row[0],
+        "BBTYPE": row[1],
+        "ETHNICITY": row[2],
+        "GENDER": row[3],
+        "LOCATION": row[4],
+        "SAMPLEID": row[5],
+              
+    }
+    filtered_sample.append(filtered_dictionary)
+print(filtered_sample)
+
+weekly_WFREQ = []
+for row in session.query(samples_metadata.WFREQ).filter(samples_metadata.SAMPLEID == 940).all():
+    filtered_WFREQ = {
+        "WFREQ": row[0],
+         
+    }
+    weekly_WFREQ.append(filtered_WFREQ)
+
+otu_id_and_sample_values = []
+otu_id = []
+sample_values = []
+
+otu_id_and_sample_values_dic ={
+    "otu_id": otu_id,
+    "sample_values":sample_values
 }
 
-filtered_result_list = list(filtered_result)
+otu_id_and_sample_values.append(otu_id_and_sample_values_dic)
+for row in session.query(samples.otu_id,samples.BB_940).filter(samples_metadata.SAMPLEID == 940).order_by(samples.BB_940.desc()).all():
+    otu_id.append(row[0])
+    sample_values.append(row[1])
 
-
-# print(metadata_df.index.values)
-
-otu_list = list(otu_id_df["lowest_taxonomic_unit_found"])
 
 # Flask Setup
 #################################################
@@ -57,23 +97,28 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-    return "Welcome!"
-
-
+   return render_template("index.html", text= sample_names)
+ 
 @app.route("/names")
 def names():
-    return jsonify(samples_names_list)
-
+    return jsonify(sample_names)
 
 @app.route("/otu")
 def otu():
-    return jsonify(otu_list)
+    return jsonify(list_of_otu_description)
 
 @app.route("/metadata")
 def metadata():
-    return jsonify(filtered_result_list)
+    return jsonify(filtered_sample)
+
+@app.route('/wfreq')
+def wfreq():
+    return jsonify(weekly_WFREQ)
+
+@app.route('/samples')
+def samples():
+    return jsonify(otu_id_and_sample_values)
 
 #run the app
 if __name__ == '__main__':
     app.run(debug=True)
-
