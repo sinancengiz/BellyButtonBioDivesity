@@ -34,7 +34,7 @@
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Incidunt optio provident tempora amet, eveniet et, eum illum, culpa laborum dicta recusandae magni architecto. Illo saepe facilis, unde. Debitis, atque, doloremque?</p>
           </div>
           <div class="col-sm-3">
-            <h1>{{ text }}</h1>
+            <h1>{{ sample_names[0] }}</h1>
 
           </div>
           <div class="col-sm-3">
@@ -45,9 +45,9 @@
           
             <div class="col-sm-3">
             <select id="selDataset" onchange="getData(this.value)">
-              <option value="dataset1">DataSet1</option>
-              <option value="dataset2">DataSet2</option>
-              <option value="dataset3">DataSet3</option>
+              {% for name in sample_names %}
+                <option value="{{ name }}">{{ name }}</option>
+              {% endfor %}
             </select></div>
         </div>
     
@@ -57,13 +57,12 @@
 
       </div>
 
-      <!-- <script>
-        // var i;
-        // for (i = 0; i < 100; i++) { 
-        //   d3.select("#selDataset").append("option").text("{{text[0]}}");
-       
-        // }
-      </script> -->
+      <script>
+      // for (var i = 0; i <= 10; i++) { 
+      //   d3.select("#selDataset").append("option").text(i.toString());
+      // }
+
+      </script>
       
       
 

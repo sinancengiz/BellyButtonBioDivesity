@@ -97,7 +97,7 @@ app = Flask(__name__)
 
 @app.route("/")
 def home():
-   return render_template("index.html", text= sample_names)
+   return render_template("index.html", sample_names= sample_names)
  
 @app.route("/names")
 def names():
