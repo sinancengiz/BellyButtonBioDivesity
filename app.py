@@ -91,17 +91,21 @@ for row in session.query(samples.otu_id,samples.BB_940).filter(samples_metadata.
     sample_values.append(row[1])
 
 
+
+
 # Flask Setup
 #################################################
 app = Flask(__name__)
 
 @app.route("/")
 def home():
-   return render_template("index.html", sample_names= sample_names)
+    return render_template("index.html", sample_names= sample_names)
+    
  
 @app.route("/names")
 def names():
     return jsonify(sample_names)
+    
 
 @app.route("/otu")
 def otu():
@@ -117,7 +121,10 @@ def wfreq():
 
 @app.route('/samples')
 def samples():
-    return jsonify(otu_id_and_sample_values)
+    data = [{
+        "y": otu_id_and_sample_values[0]["otu_id"][0:10],
+        "x": otu_id_and_sample_values[0]["sample_values"][0:10]}]
+    return jsonify(data)
 
 #run the app
 if __name__ == '__main__':

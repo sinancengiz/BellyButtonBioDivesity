@@ -15,59 +15,133 @@
 
 <body>
     <div class="container">
+          <div>
+            <nav class="navbar navbar-default">
+              <div class="container-fluid">
+                <!-- Brand and toggle get grouped for better mobile display -->
+                <div class="navbar-header">
+                  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                  </button>
+                  <a class="navbar-brand" href="#">Belly Button Biodiversity</a>
+                </div>
+            
+                <!-- Collect the nav links, forms, and other content for toggling -->
+                <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                  <ul class="nav navbar-nav">
+                    <li class="active"><a href="/names">Names<span class="sr-only">(current)</span></a></li>
+                    <li><a href="/otu">Otu Data</a></li>
+                    <li><a href="/metadata">Metadata</a></li>
+                    <li><a href="/wfreq">WFREG</a></li>
+                    <li><a href="/samples">Samples</a></li>
+                    
+                  </ul>
+
+                </div><!-- /.navbar-collapse -->
+              </div><!-- /.container-fluid -->
+            </nav>
+          </div>
 
         <!-- Row 1 -->
         <div class="row">
-          <div class="col-sm-12">
-            <h1>Belly Button BioDeversity</h1>
-            <h1>Dashboard</h1>
+          <div class="col-sm-12" style="text-align: center;background:purple; margin-bottom: 5%;color:white">
+            <h2>Belly Button BioDeversity</h2>
+            <hr>
+            <h2>Dashboard</h2>
+            <hr>
             <h4>Use Interactive Charts to Explore Datasets</h4>
-            <ul> 
-            <li>sinan line 1</li>   
-              </ul>
           </div>
         </div>
-    
         <!-- Row 2 -->
         <div class="row">
-          <div class="col-sm-3">
+          <div class="col-sm-4">
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Incidunt optio provident tempora amet, eveniet et, eum illum, culpa laborum dicta recusandae magni architecto. Illo saepe facilis, unde. Debitis, atque, doloremque?</p>
           </div>
-          <div class="col-sm-3">
-            <h1>{{ sample_names[0] }}</h1>
+          <div class="col-sm-4" style="border: blue">
+            <h3>Sample Meta Data</h3>
+            <ul> 
+                <li>Age:      </li> 
+                <li>BBtype:   </li> 
+                <li>Ethnicity: </li> 
+                <li>Gender:    </li>
+                <li>Location: </li> 
+                <li>SampleID:    </li>    
+            </ul>
+            
+          </div>
+          <div class="col-sm-3 col-md-4" style="color:blue">
+              <h2>Select Sample</h2>
+              <select id="selDataset" onchange="optionChanged(this.value)">
+                <!-- {% for name in sample_names %}
+                  <option value="{{ name }}">{{ name }}</option>
+                {% endfor %} -->
+              </select>
+              <div class="panel">
+                <h3 class="panel-title">Sample Meta Data</h3>
+              </div>
+              <div id="sample-metadata">
 
-          </div>
-          <div class="col-sm-3">
-              <h2>my chart is here</h2>
-              <div id="plot"></div>
-          </div>
+              </div>
+          </div> 
           
-          
-            <div class="col-sm-3">
-            <select id="selDataset" onchange="getData(this.value)">
-              {% for name in sample_names %}
-                <option value="{{ name }}">{{ name }}</option>
-              {% endfor %}
-            </select></div>
-        </div>
+          </div>
     
 
+          <div id="plot"></div>
 
-    
 
+          <div id="line"></div>
+          
       </div>
 
-      <script>
-      // for (var i = 0; i <= 10; i++) { 
-      //   d3.select("#selDataset").append("option").text(i.toString());
-      // }
+     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+     
+     
+     
+     <script>
+      //  function getOptions(){
+        //  var selector = document.getElementById("selDataset");
 
-      </script>
-      
-      
+         Plotly.d3.json('/names',function(error, sample_names){
+             if (error) return console.warn(error);
+          var selector = document.getElementById("selDataset");
+            for (var i =0; i < sample_names.length; i++){
+                var currentSelection = document.createElement("option");
+                currentSelection.text = sample_names[i];
+                currentSelection.value = sample_names[i];
+                selector.appendChild(currentSelection);
+            }
 
-      <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-      <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+        //     // getData(sample_names[0],buildCharts);
+
+        //  })
+         
+        //  }  
+        //  function optionChanged(newSample){
+        //    getData(newSample,updateCharts);
+        //  }
+        //  function init(){
+        //    getOptions();
+        //  }
+
+        //  init();
+
+
+
+       Plotly.d3.json('/samples', function(error, otu_id_and_sample_values){
+             if (error) return console.warn(error);
+ 
+             var layout = { margin: { t: 0 } }
+             var LINE = document.getElementById('line');
+             Plotly.plot(LINE, otu_id_and_sample_values)
+         })
+
+
+     </script>
+
 </body>
 
 </html>
